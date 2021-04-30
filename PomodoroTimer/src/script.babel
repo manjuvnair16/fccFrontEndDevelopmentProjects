@@ -1,0 +1,184 @@
+const {useState, useEffect} = React;
+
+function PomodoroClock() {
+  const [breakLength, setBreakLength] =useState(5);
+  const [sessionLength, setSessionLength] = useState(25);
+  const [timerName, setTimerName] = useState("Session");
+  const [timerStatus, setTimerStatus] = useState("pause");
+  const [timeLeft, setTimeLeft] = useState(1500);
+  
+  function useHandlePlayAlarm(){
+    let alarmSound = document.getElementById("beep");
+    alarmSound.play();
+  }
+  
+  function useHandleZeroTimer(){
+    if (timerName === "Session"){
+      setTimerName("Break");
+      setTimeLeft(breakLength * 60);
+    } else {
+      setTimerName("Session");
+      setTimeLeft(sessionLength * 60);
+    }
+  }  
+  
+  useEffect(() => {
+    let beginCount;
+    if (timerStatus === "play"){
+      beginCount = setInterval(() => {
+                          setTimeLeft(timeLeft -1);
+                          if (timeLeft === 1){
+                            useHandlePlayAlarm();
+                           }
+                           if (timeLeft === 0){
+                             useHandleZeroTimer();
+                           }
+      
+                   }, 1000);
+    }
+    return () => clearInterval(beginCount);
+    
+  }, [timeLeft, timerStatus,timerName])
+  
+  function handlePlayOrPause(){
+     if (timerStatus === "pause"){
+       setTimerStatus("play");
+       
+     } else{
+       setTimerStatus("pause");
+     }  
+  }
+  
+  function handleReset(){
+   setBreakLength(5);
+   setSessionLength(25);
+   setTimerName("Session");
+   setTimerStatus("pause");
+   setTimeLeft(1500);
+   let alarmSound = document.getElementById("beep");
+   alarmSound.pause();
+   alarmSound.currentTime = 0;
+  }
+  
+  function handleBrkDecrement(){
+    if (breakLength !== 1){
+          setBreakLength(breakLength -1);
+          if (timerName === "Break") {
+            setTimeLeft((breakLength -1) * 60);
+          }
+     }
+  }
+  function handleBrkIncrement(){
+    if (breakLength !== 60){
+          setBreakLength(breakLength + 1);
+          if (timerName === "Break") {
+            setTimeLeft((breakLength + 1) * 60);
+          }
+     }
+        
+  }
+  function handleSessDecrement(){
+    if (sessionLength !== 1){
+          setSessionLength(sessionLength -1);
+          if (timerName === "Session") {
+            setTimeLeft((sessionLength -1) * 60);
+          }
+     }
+    
+  }
+  function handleSessIncrement(){
+    if (sessionLength !== 60){
+          setSessionLength(sessionLength + 1);
+          if (timerName === "Session") {
+            setTimeLeft((sessionLength + 1) * 60);
+          }
+     }
+    
+  }
+  
+  
+  function formatTimeLeft(){
+      let minutes = Math.floor(timeLeft/60);
+      let seconds = timeLeft - minutes * 60;
+      minutes =  minutes > 9 ? minutes : '0'+ minutes;
+      seconds =  seconds > 9 ? seconds : '0'+ seconds;
+      return minutes + ':' + seconds;
+  }
+  
+  const playOrPause = (timerStatus === "pause") ? <i class="fas fa-play fa-sm"></i> : <i class="fas fa-pause"></i>;
+ 
+  return (
+   <div id ="main"> 
+    <div id ="wrapper">
+      <h1>Pomodoro Clock</h1>
+       <div id="labels">
+          <div>
+            <h3 id="break-display">Break Length</h3>
+            <h3 id="session-display">Session Length</h3>
+          </div>  
+          <DisplayTimeLength 
+                         BrkLength={breakLength}
+                         SessLength={sessionLength}
+                         
+                         handleBrkDecrement={handleBrkDecrement}
+                         handleBrkIncrement={handleBrkIncrement}
+            
+                         handleSessDecrement={handleSessDecrement}
+                         handleSessIncrement={handleSessIncrement}
+            />
+          
+        
+        </div>
+        <div id="timers">
+          <div id="display-time-wrapper">
+            <div id="timer-label">{timerName}</div>
+            <div id="time-left">{formatTimeLeft()}</div>
+            <div id="audio-btns">
+              <span>   <button id="start_stop" onClick={handlePlayOrPause}> {playOrPause} </button> </span>
+              <span>  <button id="reset" onClick={handleReset}><i class="fas fa-undo"></i></button></span>
+            </div> 
+            <audio id="beep" src="https://raw.githubusercontent.com/freeCodeCamp/cdn/master/build/testable-projects-fcc/audio/BeepSound.wav"/>
+          </div>  
+        </div>  
+      </div>
+      <footer>image source: https://www.pexels.com/</footer>
+  </div>
+  
+  );
+  
+}
+
+function DisplayTimeLength(props) {
+  return(
+    <div>
+    <span id="break-label">
+      <button id="break-decrement" value="-" onClick={props.handleBrkDecrement}> <i class="fas fa-minus"> </i> </button>
+      <span id="break-length">{props.BrkLength}</span>
+      <button id="break-increment" value="+" onClick={props.handleBrkIncrement}> <i class="fas fa-plus"> </i> </button>
+    </span>
+    <span id="session-label">
+      <button id="session-decrement" value="-" onClick={props.handleSessDecrement}> <i class="fas fa-minus"> </i> </button>
+      <span id="session-length">{props.SessLength}</span>
+      <button id="session-increment" value="+" onClick={props.handleSessIncrement}> <i class="fas fa-plus"> </i> </button>
+    </span>
+  </div>
+  );
+}
+/*
+function DisplayTimer(props){
+  const playOrPause = (props.timerStatus === "pause") ? <i class="fas fa-play"></i> : <i class="fas fa-pause"></i>;
+  return(
+    <div id="display-time-wrapper">
+      <div id="timer-label">{props.timerName}</div>
+      <div id="time-left">{props.timeLeft}</div>
+      <span>   <button id="start_stop" onClick={props.handlePlayOrPause}> {playOrPause} </button> </span>*/
+   {  /* <span>  <button id="pause">{playOrPause}</button></span>*/}
+   /*   <span>  <button id="reset" onClick={props.handleReset}><i class="fas fa-undo"></i></button></span>
+      <audio id="beep" src="https://raw.githubusercontent.com/freeCodeCamp/cdn/master/build/testable-projects-fcc/audio/BeepSound.wav"/>
+      
+      
+    </div>  
+  );
+}*/
+
+ReactDOM.render(<PomodoroClock />, document.getElementById("root"));
