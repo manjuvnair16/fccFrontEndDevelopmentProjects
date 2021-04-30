@@ -1,0 +1,59 @@
+#main{
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+}
+
+#drum-machine{
+  border: 1px solid yellow;
+  border-radius: 5px;
+  width: 50em;
+  height: 35em;
+  margin-top: 25px;
+ }
+
+#display{
+  border: 1px solid grey;
+  border-radius: 5px;
+  background-color: #909090;
+  color: white;
+  height: 80px;
+  width: 450px;
+  margin: auto;
+  margin-top: 10px;
+  padding: 20px;
+}
+
+#drum-vol{
+  display: flex;
+  flex-direction: row;
+}
+#drumpad-container{
+  width: 100px * 3;
+  height: 80px * 3 + 32;
+  display: inline-block;
+  margin-top: 20px;
+  
+}
+.drum-pad{
+  width: 100px;
+  height: 80px;
+  margin: 10px;
+  border: 1px solid black;
+}
+#vol-bar{
+  
+  width: 500px;
+  margin-top: 150px;
+  margin-right: 15px;
+}
+
+#history-controls{
+  padding: 50px;
+  text-align: center;
+}
+#play-btn{
+  margin-right:50px;
+}
