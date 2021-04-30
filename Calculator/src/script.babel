@@ -1,0 +1,222 @@
+
+const {useState, useEffect} = React;
+
+
+function Calculator() {
+  const [displayNum, setDisplayNum] = useState("");
+  const [clickedValue, setClickedValue] = useState("");
+  const [clickedGrp, setClickedGrp] = useState("");
+  const [clicked, setClicked] = useState(false);
+  const [displayFormula, setDisplayFormula] = useState("");
+  const [history, setHistory] = useState([]);
+  const [historyBtn, setHistoryBtn] = useState(false)
+  const [formulaArr, setFormulaArr] = useState([]);
+  const [disableBtn, setDisableBtn] = useState(false);
+  const [prevValueClass, setPrevValueClass] = useState("");
+  
+  function useEvaluateFormula () {
+    let typedFormulaStr = formulaArr.join('');
+    let regexHasMoreOperators = /[\+\-\*\/]{3,}/g;
+    let regexHasTwoOperators = /[\+\-\*\/][\*\/]/g;
+    let regexHasOperatorsAtEnd = /[\+\-\*\/]+$/;
+    
+    typedFormulaStr = (regexHasOperatorsAtEnd.test(typedFormulaStr)) ? typedFormulaStr.replace(regexHasOperatorsAtEnd,"") : typedFormulaStr;
+      
+    if (regexHasMoreOperators.test(typedFormulaStr)){
+        typedFormulaStr = typedFormulaStr.replace(/[\+\-\*\/]+([\+\-\*\/])/g, '$1');
+     } else if (regexHasTwoOperators.test(typedFormulaStr)){
+        typedFormulaStr = typedFormulaStr.replace(/[\+\-\*\/]([\*\/])/g, '$1');
+     } 
+     const ans = Math.round(1000000000000 * math.evaluate(typedFormulaStr)) / 1000000000000;
+     let currEqn = typedFormulaStr + "=" + ans;
+     currEqn = currEqn.replace(/\*/g, 'x');
+     let newEqnArr = [].concat(currEqn);
+     setHistory(newEqnArr.concat(history));
+     console.log(history)
+     return ans.toString();
+  }
+  
+  function useCheckMaxLimit() {
+    let maxLimit = (displayFormula.length > 30) ? (setDisplayNum("Max Limit"), setDisableBtn(true), true) : false;
+    return maxLimit;
+  }
+  
+  
+  
+  useEffect(() => {
+   switch (clickedGrp){
+       case "numbers":
+          if (!useCheckMaxLimit()){
+              if (((displayNum === "0")&&(clickedValue==="0"))|| (prevValueClass === "answer")){
+                setDisplayNum(displayNum);
+                return;
+              }
+              
+              if ((prevValueClass === "operators") || (prevValueClass === "") ){
+                setDisplayNum(clickedValue);
+              } else {
+                setDisplayNum(displayNum + clickedValue);
+              }
+              setPrevValueClass(clickedGrp);
+              setDisplayFormula(displayFormula + clickedValue);
+              setFormulaArr([...formulaArr].concat(parseInt(clickedValue,10)));
+          }
+          return;
+         
+       case "operators":
+          if (!useCheckMaxLimit()){
+            if((prevValueClass === "") && ((clickedValue==="x")||(clickedValue==="/"))){
+               return;
+            }
+            if((prevValueClass === "operators") && (displayFormula.length === 1)){
+              return;
+            }
+            if (prevValueClass === "operators"){
+              if(/[\+\-\x\/]-$/.test(displayFormula)){
+                setDisplayFormula(displayFormula.slice(0,-2) + clickedValue);
+              } else if(clickedValue!=="-"){
+                setDisplayFormula(displayFormula.slice(0,-1) + clickedValue);
+              }  else{
+                setDisplayFormula(displayFormula + clickedValue);
+              }
+            } else{
+                setDisplayFormula(displayFormula + clickedValue);
+            }
+            setDisplayNum(clickedValue);
+            setPrevValueClass(clickedGrp);
+            
+            if(clickedValue === "x") {
+              setFormulaArr([...formulaArr].concat('*'));
+            }else{
+              setFormulaArr([...formulaArr].concat(clickedValue));
+            }
+          
+          }
+          return;
+         
+       case "decimal-point":
+          if (!useCheckMaxLimit()){
+             if ((prevValueClass === "answer")||(displayNum.includes("."))){
+                setDisplayNum(displayNum);
+                return;
+             } 
+             if ((prevValueClass !== "numbers")&& (prevValueClass !== "decimal-point")){
+                setDisplayNum("0"+ clickedValue);
+                setDisplayFormula(displayFormula + "0" + clickedValue);
+                setFormulaArr([...formulaArr].concat("0"+clickedValue));
+             } else {
+                setDisplayNum(displayNum + clickedValue);
+                setDisplayFormula(displayFormula + clickedValue);
+                setFormulaArr([...formulaArr].concat(clickedValue));
+            }
+            setPrevValueClass(clickedGrp);
+          }  
+          return;
+         
+       case "equals-to":
+         if((prevValueClass !== "answer") && (prevValueClass !== "")){
+           setDisplayFormula(displayFormula + clickedValue);
+           setDisableBtn(false);
+           const answer = useEvaluateFormula();
+           setDisplayFormula(answer);
+           setDisplayNum(answer);
+           setPrevValueClass("answer");
+           setFormulaArr(answer);
+         }
+         return;
+         
+       case "all-clear":
+          setDisplayNum("0");
+          setPrevValueClass("");
+          setFormulaArr([]);
+          setDisplayFormula("");
+          setDisableBtn(false);
+          return;
+       
+       case "calc-history":
+          
+       case "far fa-clock":
+          setHistoryBtn(true);
+          return;
+     
+       case "clr-history":
+       case "fas fa-times fa-sm":
+          setHistoryBtn(false);
+          return;
+          
+             
+  }
+}, [clicked]);
+
+
+ return(
+    
+   <div class="main">
+      <CalcKeys   displayNum={displayNum}
+                  displayFormula={displayFormula}
+                  disableBtn={disableBtn}
+                  historyBtn={historyBtn}
+                  history={history}
+                  onClick={(value,grp) => {setClickedValue(value); setClickedGrp(grp);setClicked(prev => !prev);}}
+                  
+        />
+   </div>    
+  )
+}
+
+function CalcKeys(props) {
+  const clickProp = (e) => props.onClick(e.target.value,e.target.className);
+  const showHistoryStyle= (props.historyBtn) ? {display:"block"} : {display:"none"};
+  const calcOpacityStyle = (props.historyBtn) ? {opacity: 0.4} : {};
+  const displayHistory = props.history.map(eqn => {
+      return (
+          <ul>
+          <li>{eqn}</li>
+          </ul>
+      );
+  })
+  
+  return(
+   <div class="wrapper">
+    <div id="history-div" style={showHistoryStyle}> 
+      <button id="close-history" className="clr-history" value="close" onClick={clickProp}><i class="fas fa-times fa-sm" ></i></button> 
+      History:{displayHistory}
+    </div>  
+    <div class="container" style={calcOpacityStyle}>
+       <div  class="display-scrn">
+         <div id="display-formula">{props.displayFormula}</div>
+         <div id="display">{props.displayNum}</div>
+       </div>
+        
+       <button id="history" className="calc-history" value="history" onClick={clickProp}><i class="far fa-clock" ></i></button>
+      
+       <button id="clear" className="all-clear" value="0" onClick={clickProp}>AC</button>
+       <button id="add" className="operators" value="+" disabled={props.disableBtn} onClick={clickProp}>+</button>
+      
+       <button id="seven" className="numbers" value="7" disabled={props.disableBtn} onClick={clickProp}>7</button>
+       <button id="eight" className="numbers" value="8" disabled={props.disableBtn} onClick={clickProp}>8</button>
+       <button id="nine"  className="numbers" value="9" disabled={props.disableBtn} onClick={clickProp}>9</button>
+       <button id="subtract" className="operators" value="-" disabled={props.disableBtn} onClick={clickProp}>–</button>
+      
+       <button id="four" className="numbers" value="4" disabled={props.disableBtn} onClick={clickProp}>4</button>
+       <button id="five" className="numbers" value="5" disabled={props.disableBtn} onClick={clickProp}>5</button>
+       <button id="six" className="numbers" value="6" disabled={props.disableBtn} onClick={clickProp}>6</button>
+       <button id="multiply" className="operators" value="x" disabled={props.disableBtn} onClick={clickProp}>x</button>
+      
+       <button id="one" className="numbers" value="1" disabled={props.disableBtn} onClick={clickProp}>1</button>
+       <button id="two" className="numbers" value="2" disabled={props.disableBtn} onClick={clickProp}>2</button>
+       <button id="three" className="numbers" value="3" disabled={props.disableBtn} onClick={clickProp}>3</button>
+       <button id="divide" className="operators" value="/" disabled={props.disableBtn} onClick={clickProp}>/</button>
+      
+       <button id="zero" className="numbers" value="0" disabled={props.disableBtn} onClick={clickProp}>0</button>
+       <button id="decimal" className="decimal-point" value="." disabled={props.disableBtn} onClick={clickProp}>.</button>
+       <button id="equals" className="equals-to" value="=" onClick={clickProp}>=</button>
+       
+  </div>
+ </div> 
+  )
+}
+
+
+
+ReactDOM.render(<Calculator />, document.getElementById("root"));
