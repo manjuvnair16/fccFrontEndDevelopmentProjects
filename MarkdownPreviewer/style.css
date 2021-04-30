@@ -1,0 +1,44 @@
+.heading{
+  font-family: Monospace;
+  background-color: #000000;
+  color: white;
+  text-align: center;
+}
+
+#main{
+  display: flex;
+  flex-direction: row;
+  margin-top: 4em;
+   
+}
+.edit-header{
+  text-align: center;
+  height: 15px;
+  background-color: #808080;
+  color: white;
+  margin-left: 1.7em;
+  border: 1px #808080;
+}
+h5{
+  margin: 0;
+ }
+#editor{
+  height: 100vh;
+  width: 45em;
+  margin-left: 2em;
+  
+}
+
+.preview-header{
+  border: 1px  #808080;
+  margin-left: 3em;
+  text-align:center;
+  background-color: #808080;
+  color: white;
+}
+#preview{
+  width: 44em;
+  border: 1px solid black;
+  margin-left: 3em;
+  
+}
